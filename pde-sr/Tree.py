@@ -5,6 +5,7 @@ class Tree:
     def __init__(self, root=None, parents=None, operators=None, terminals=None, fitness=None, desired_value=None):
         self.operators = operators
         self.terminals = terminals
+        self.min_depth = 2 # really annoying when it is 0
         self.max_depth = 3
         self.parents = parents  # list of parents => 0
         self.desired_value = desired_value  # what the output should converge towards
@@ -17,7 +18,7 @@ class Tree:
         # print(self.metrics)
 
     def random_tree(self, depth=0, node_type=None, child_type=None):
-        if depth == self.max_depth or random.random() < 0.1:
+        if depth > self.min_depth and (depth == self.max_depth or random.random() < 0.1):
             # if node type given a matrix, it means that the parent expects a matrix
             if node_type == "matrix":
                 choice = self.terminals[0]
@@ -68,16 +69,20 @@ class Tree:
 
     def mutate(self):
         # select random node at certain depth
-        print(self.root.string)
+        # print("root string")
+        # print(self.root.string)
 
         node, depth = self.root.randomly_select_node()
 
         # generate new tree starting from depth
         new_node = self.random_tree(depth=depth, node_type=node.node_type)
 
-        print(node)
+        print(f"function: {self.root.string}")
+        print(f"node func: {node.string}")
+        print(f"parent : {node.parent.string}")
         # replace node
         parent = node.parent
+        # print(parent)
         parent.replace(node, new_node)
 
         # Recalc whole tree for now

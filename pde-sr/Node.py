@@ -5,7 +5,7 @@ import scipy.io as scio
 
 class Node:
 
-    def __init__(self, parent=None, children=None, operator=None, value=None, string=None, node_type=None):
+    def __init__(self, parent="blakdsla", children=None, operator=None, value=None, string=None, node_type=None):
         self.parent = parent  # single parent_node
         self.children = children  # list of subnodes (0, 1 or 2)
         self.operator = operator  # type of operator (+,-,*,gradient)
@@ -35,16 +35,16 @@ class Node:
             return self.value
         # one child
         elif self.operator[0] == 'first_grad':
-            # test = self.children[0].calculate()
-            # print(test)
             self.value = first_gradient(self.children[0].calculate())
             return self.value
         elif self.operator[0] == 'second_grad':
             self.value = second_gradient(self.children[0].calculate())
             return self.value
+        else:
+            print("NOOOOOOOOO")
 
     def randomly_select_node(self, depth=0):
-        if depth != 0 and (random.random() < 0.2 or self.children == None):
+        if depth > 0 and random.random() < 0.2 or self.children == None:
             return self, depth
         # explore this random node
         return random.choice(self.children).randomly_select_node(depth=depth + 1)
@@ -55,6 +55,8 @@ class Node:
             return
         for child in self.children:
             child.connect_parent_nodes(parent=self)
+            # print("child.parent")
+            # print(child.parent.string)
 
     def replace(self, node, new_node):
         if self.children[0] == node:
@@ -64,7 +66,7 @@ class Node:
         else:
             print("idk chief")
 
-data = scio.loadmat('../data/burgers.mat')
+data = scio.loadmat('./data/burgers.mat')
 
 x=np.squeeze(data.get("x"))
 
