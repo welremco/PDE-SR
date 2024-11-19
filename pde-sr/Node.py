@@ -64,7 +64,7 @@ class Node:
         else:
             print("idk chief")
 
-data = scio.loadmat('./data/burgers.mat')
+data = scio.loadmat('../data/burgers.mat')
 
 x=np.squeeze(data.get("x"))
 

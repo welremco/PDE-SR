@@ -4,7 +4,7 @@ import numpy as np
 import scipy.io as scio
 
 # map u(x,t), given field (burgers eq), Where the function will be x,t,u
-data = scio.loadmat('./data/burgers.mat')
+data = scio.loadmat('../data/burgers.mat')
 u=data.get("usol").T
 
 # we want to find du/dt, aka a partial differential equation described a change over time for field u(x,t)
