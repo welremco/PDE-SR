@@ -66,30 +66,32 @@ class Tree:
 
     def show_tree(self):
         return self.root.string
-
+    def calculate_string(self):
+        self.root.calculate_string()
     def mutate(self):
-        # select random node at certain depth
-        # print("root string")
-        # print(self.root.string)
-
+        # Select node randomly starting from root node
         node, depth = self.root.randomly_select_node()
 
         # generate new tree starting from depth
         new_node = self.random_tree(depth=depth, node_type=node.node_type)
 
-        print(f"function: {self.root.string}")
-        print(f"node func: {node.string}")
-        print(f"parent : {node.parent.string}")
         # replace node
-        parent = node.parent
-        # print(parent)
-        parent.replace(node, new_node)
+        node.parent.replace(node, new_node)
 
-        # Recalc whole tree for now
+        # connect new node with parent
+        new_node.connect_parent_nodes(parent=node.parent)
 
-        # evaluate new tree starting from depth
+        # Recalculate full tree
+        self.calculate_tree()
 
-        # recombine into old tree at depth
+        # evaluate full tree
+        self.evaluate_tree()
+
+        # calculate string
+        self.calculate_string()
+
+
+
     # def replace(self, node, new_node)
     # start by searching for old node
 

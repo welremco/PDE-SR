@@ -87,7 +87,6 @@ terminals = [("u", u, "matrix"),
 
 population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t)
 # mutate tree test
-print(population.trees[0].mutate())
 for i in population.trees:
     # print(f"dflksjdf: {i.root.children[0].parent}")
     i.mutate()

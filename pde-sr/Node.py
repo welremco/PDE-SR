@@ -1,11 +1,12 @@
 import random
 import numpy as np
 import scipy.io as scio
+from numpy.f2py.auxfuncs import throw_error
 
 
 class Node:
 
-    def __init__(self, parent="blakdsla", children=None, operator=None, value=None, string=None, node_type=None):
+    def __init__(self, parent=None, children=None, operator=None, value=None, string=None, node_type=None):
         self.parent = parent  # single parent_node
         self.children = children  # list of subnodes (0, 1 or 2)
         self.operator = operator  # type of operator (+,-,*,gradient)
@@ -42,29 +43,39 @@ class Node:
             return self.value
         else:
             print("NOOOOOOOOO")
-
+    def calculate_string(self):
+        if self.children==None:
+            # sanity check
+            if self.string == None:
+                Exception("self.string shouldnt be none at leaf")
+            return
+        for child in self.children:
+            child.calculate_string()
+        if self.operator[1] == 2:
+            return_string = f"({self.children[0].string} {self.operator[0]} {self.children[1].string})"
+        else:
+            return_string = f"{self.operator[0]}({self.children[0].string})"
+        self.string = return_string
     def randomly_select_node(self, depth=0):
-        if depth > 0 and random.random() < 0.2 or self.children == None:
+
+        if depth > 0 and random.random() < 0.05 or self.children == None:
             return self, depth
         # explore this random node
         return random.choice(self.children).randomly_select_node(depth=depth + 1)
 
     def connect_parent_nodes(self, parent=None):
         self.parent = parent
-        if self.children == None:
+        if self.children is None:
             return
         for child in self.children:
             child.connect_parent_nodes(parent=self)
-            # print("child.parent")
-            # print(child.parent.string)
 
     def replace(self, node, new_node):
-        if self.children[0] == node:
-            self.children[0] = new_node
-        elif self.children[1] == node:
-            self.children[1] = new_node
-        else:
-            print("idk chief")
+        for i, child in enumerate(self.children):
+            if child == node:
+                self.children[i] = new_node
+                return
+        raise Exception("No node to replace found")
 
 data = scio.loadmat('./data/burgers.mat')
 
