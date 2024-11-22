@@ -2,7 +2,7 @@ from Population import Population
 # %pip install pysr
 import numpy as np
 import scipy.io as scio
-
+from scipy.special import lambertw
 # map u(x,t), given field (burgers eq), Where the function will be x,t,u
 data = scio.loadmat('./data/burgers.mat')
 u=data.get("usol").T
@@ -78,26 +78,29 @@ print(f"Error between u_t and second gradient part: {mse_non_sensical}")
 # test generated function
 mse_this = ((u_t - second_gradient(u-u))**2).mean(axis=-1).mean()
 print(mse_this)
-operators = {
-        # '+': 2,
-         '-':2,
-         '*':2,
-         'first_grad':1,
-         'second_grad':1}
-
-terminals = [("u", u, "matrix"),
-             ("0.1", 0.1, "scalar")]
-# string, function, children
-operators_and_terminals = [
+#string, function, children
+operators = [
     ("+", np.add, 2),
     ("-", np.subtract, 2),
     ("*", np.multiply, 2),
     ("first_grad", first_gradient, 1),
     ("second_grad", second_gradient, 1),
-    ("u", u, 0),
-    ("0.1", 0.1, 0)
+    # ("w", lambertw, 1),
 ]
-population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t)
+#string, value, type
+terminals = [("u", u, "matrix"),
+             ("0.1", 0.1, "scalar")]
+# string, function, children
+# operators_and_terminals = [
+#     ("+", np.add, 2),
+#     ("-", np.subtract, 2),
+#     ("*", np.multiply, 2),
+#     ("first_grad", first_gradient, 2),
+#     ("second_grad", second_gradient, 2),
+#     ("u", u, 2),
+#     ("0.1", 0.1, 2)
+# ]
+population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t_solved_functions)
 
 # Test algorithm
 for i in range(100):

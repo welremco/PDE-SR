@@ -17,32 +17,15 @@ class Node:
     def calculate(self):
         if self.operator[0] == 'leaf':
             return self.value
-        # two children
-        elif self.operator[0] == '*':
-            product = 1
-            for node in self.children:
-                product *= node.calculate()
-            self.value = product
+        elif self.operator[2] == 2:
+            self.value = self.operator[1](self.children[0].calculate(), self.children[1].calculate())
             return self.value
-        elif self.operator[0] == '+':
-            sum_total = 0
-            for node in self.children:
-                sum_total += node.calculate()
-            self.value = sum_total
-            return self.value
-        elif self.operator[0] == '-':
-            total = self.children[0].calculate() - self.children[1].calculate()
-            self.value = total
-            return self.value
-        # one child
-        elif self.operator[0] == 'first_grad':
-            self.value = first_gradient(self.children[0].calculate())
-            return self.value
-        elif self.operator[0] == 'second_grad':
-            self.value = second_gradient(self.children[0].calculate())
+        elif self.operator[2] == 1:
+            self.value = self.operator[1](self.children[0].calculate())
             return self.value
         else:
-            print("NOOOOOOOOO")
+            Exception("Operator doesn't have one or two input values")
+
     def calculate_string(self):
         if self.children==None:
             # sanity check
@@ -51,7 +34,7 @@ class Node:
             return
         for child in self.children:
             child.calculate_string()
-        if self.operator[1] == 2:
+        if self.operator[2] == 2:
             return_string = f"({self.children[0].string} {self.operator[0]} {self.children[1].string})"
         else:
             return_string = f"{self.operator[0]}({self.children[0].string})"

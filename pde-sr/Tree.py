@@ -1,13 +1,14 @@
 from Node import Node
 import random
 from copy import deepcopy
+import numpy as np
 import re
 class Tree:
     def __init__(self, root=None, parents=None, operators=None, terminals=None, type=None, desired_value=None):
         self.operators = operators
         self.terminals = terminals
-        self.min_depth = 3 # really annoying when it is 0
-        self.max_depth = 4
+        self.min_depth = 2 # really annoying when it is 0
+        self.max_depth = 3
         self.parents = parents  # list of parents => 0
         self.desired_value = desired_value  # what the output should converge towards
         # if type == "burger":
@@ -31,19 +32,21 @@ class Tree:
             leaf_node = Node(value=choice[1])
             leaf_node.string = choice[0]
             leaf_node.node_type = choice[2]
+            # Dirty solution, should be nice
             leaf_node.operator = ("leaf", 0)
             return leaf_node
         else:
             # if node_type is a matrix, then one of the children also has to be a matrix
             child_type = node_type
             # Create an internal node with a random function and two children
-            operator = random.choice(list(self.operators.items()))
+            operator = random.choice(self.operators)
+
             if operator[0] == 'first_grad' or operator[0] == 'second_grad':
                 child_type = "matrix"
 
             children = []
             strings = []
-            for i in range(operator[1]):
+            for i in range(operator[2]):
                 child = self.random_tree(depth + 1, node_type=child_type)
                 children.append(child)
                 strings.append(child.string)
@@ -53,7 +56,7 @@ class Tree:
             else:
                 node_type = "matrix"
 
-            if operator[1] == 2:
+            if operator[2] == 2:
                 return_string = f"({strings[0]} {operator[0]} {strings[1]})"
             else:
                 return_string = f"{operator[0]}({strings[0]})"
@@ -84,7 +87,9 @@ class Tree:
     #         # Remove empty strings and return the result
     #         return new_parts
     #     def string_to_operator(char=None):
-    #         if char in operators
+    #         if char in [o[0] for o in self.operators]:
+    #
+    #
     #         return
     #     splitted_string = split_string(string)
     #     print(splitted_string)
@@ -102,7 +107,7 @@ class Tree:
 
     def evaluate_tree(self):
         # evaluate fitness for now
-        self.metrics = [((self.desired_value - self.value) ** 2).mean(axis=-1).mean()]
+        self.metrics = [np.sqrt(np.absolute(((self.desired_value - self.value) ** 2).mean(axis=-1).mean()))]
 
     def show_tree(self):
         return self.root.string
