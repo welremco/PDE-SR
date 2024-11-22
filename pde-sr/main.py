@@ -67,26 +67,40 @@ print(f"Error from functions: {mse}")
 
 # Test MSE for wrong functions
 non_sensical = u * first_gradient(u)
-mse_non_sensical = mse = ((u_t - non_sensical)**2).mean(axis=-1).mean()
+mse_non_sensical = ((u_t - non_sensical)**2).mean(axis=-1).mean()
 print(f"Error between u_t and nonlinear part: {mse_non_sensical}")
 
 # Test MSE wrong functions
 non_sensical = 0.1 * second_gradient(u)
-mse_non_sensical = mse = ((u_t - non_sensical)**2).mean(axis=-1).mean()
+mse_non_sensical = ((u_t - non_sensical)**2).mean(axis=-1).mean()
 print(f"Error between u_t and second gradient part: {mse_non_sensical}")
 
-
-operators = {'+': 2,
+# test generated function
+mse_this = ((u_t - second_gradient(u-u))**2).mean(axis=-1).mean()
+print(mse_this)
+operators = {
+        # '+': 2,
          '-':2,
          '*':2,
          'first_grad':1,
          'second_grad':1}
 
 terminals = [("u", u, "matrix"),
-             ("1", 1, "scalar")]
+             ("0.1", 0.1, "scalar")]
 
 population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t)
-# mutate tree test
-for i in population.trees:
-    # print(f"dflksjdf: {i.root.children[0].parent}")
-    i.mutate()
+
+# Test algorithm
+for i in range(100):
+    population.update_population()
+    # print best individual in tree and MSE
+    best_score = 100000
+    best_individual = None
+    for tree in population.trees:
+        if tree.metrics[0] < best_score:
+            best_score = tree.metrics[0]
+            best_individual = tree
+    # print best tree every iteration
+    print(f"Best individual: {best_individual.root.string}")
+    print(f"Best MSE: {best_score}")
+

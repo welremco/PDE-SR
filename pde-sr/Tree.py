@@ -1,11 +1,11 @@
 from Node import Node
 import random
-
+from copy import deepcopy
 class Tree:
     def __init__(self, root=None, parents=None, operators=None, terminals=None, fitness=None, desired_value=None):
         self.operators = operators
         self.terminals = terminals
-        self.min_depth = 2 # really annoying when it is 0
+        self.min_depth = 1 # really annoying when it is 0
         self.max_depth = 3
         self.parents = parents  # list of parents => 0
         self.desired_value = desired_value  # what the output should converge towards
@@ -68,12 +68,19 @@ class Tree:
         return self.root.string
     def calculate_string(self):
         self.root.calculate_string()
+    def copy(self):
+        return deepcopy(self)
     def mutate(self):
+        # copy self
+        copied_tree = self.copy()
+        # print("Before")
+        # print(f"Original: {self.root.string}")
+        # print(f"Copy:     {copied_tree.root.string}")
         # Select node randomly starting from root node
-        node, depth = self.root.randomly_select_node()
+        node, depth = copied_tree.root.randomly_select_node()
 
         # generate new tree starting from depth
-        new_node = self.random_tree(depth=depth, node_type=node.node_type)
+        new_node = copied_tree.random_tree(depth=depth, node_type=node.node_type)
 
         # replace node
         node.parent.replace(node, new_node)
@@ -82,15 +89,16 @@ class Tree:
         new_node.connect_parent_nodes(parent=node.parent)
 
         # Recalculate full tree
-        self.calculate_tree()
+        copied_tree.calculate_tree()
 
         # evaluate full tree
-        self.evaluate_tree()
+        copied_tree.evaluate_tree()
 
         # calculate string
-        self.calculate_string()
-
-
+        copied_tree.calculate_string()
+        # print(f"Original: {self.root.string}")
+        # print(f"Copy:     {copied_tree.root.string}")
+        return copied_tree
 
     # def replace(self, node, new_node)
     # start by searching for old node

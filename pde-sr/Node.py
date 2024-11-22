@@ -58,7 +58,7 @@ class Node:
         self.string = return_string
     def randomly_select_node(self, depth=0):
 
-        if depth > 0 and random.random() < 0.05 or self.children == None:
+        if depth > 0 and random.random() < 0.5 or self.children == None:
             return self, depth
         # explore this random node
         return random.choice(self.children).randomly_select_node(depth=depth + 1)

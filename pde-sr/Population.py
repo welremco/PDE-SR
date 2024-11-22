@@ -10,6 +10,17 @@ class Population:
 
     def update_population(self):
         # updates population
+        # mutate all trees and save if metrics improve
+
+        new_trees = []
+        for tree in self.trees:
+            new_tree = tree.mutate()
+            # TODO update for multi objective
+            if new_tree.metrics[0] < tree.metrics[0]:
+                new_trees.append(new_tree)
+            else:
+                new_trees.append(tree)
+        self.trees = new_trees
         return
 
     def calculate_population(self):
