@@ -63,6 +63,39 @@ class Node:
         # explore this random node
         return random.choice(self.children).randomly_select_node(depth=depth + 1)
 
+    def string_to_tree(self, string="((0.1 * second_grad(u)) - (u * first_grad(u)))"):
+        # Used for creating tree by hand or from saved strings, brackets denote one depth deeper for operator specified
+        # Spaces need to be correctly denoted (for finding roots)
+        # Find middle operator (root of tree)
+        def split_string(s):
+            # This regular expression matches everything between parentheses and treats it as a single entity
+            # or matches spaces to split the string
+            pattern = r'(\([^)]*\))|\s+'
+
+            # Split using the regex pattern
+            parts = re.split(pattern, s)
+            parts = [part for part in parts if part]
+            # add remaining back parentheses (should be done easier but idk how)
+            new_parts = []
+            for part in parts:
+                if all(c == ')' for c in part):
+                    new_parts[-1] = new_parts[-1] + part
+                else:
+                    new_parts.append(part)
+            # Remove empty strings and return the result
+            return new_parts
+        def string_to_operator(char=None):
+
+            return
+        splitted_string = split_string(string)
+        print(splitted_string)
+        for part in splitted_string:
+            if len(part) == 1:
+                # Change string into operator
+                operator = string_to_operator(part)
+            else:
+                node = string_to_tree(string=part)
+        return node
     def connect_parent_nodes(self, parent=None):
         self.parent = parent
         if self.children is None:

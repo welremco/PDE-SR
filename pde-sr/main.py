@@ -87,7 +87,16 @@ operators = {
 
 terminals = [("u", u, "matrix"),
              ("0.1", 0.1, "scalar")]
-
+# string, function, children
+operators_and_terminals = [
+    ("+", np.add, 2),
+    ("-", np.subtract, 2),
+    ("*", np.multiply, 2),
+    ("first_grad", first_gradient, 1),
+    ("second_grad", second_gradient, 1),
+    ("u", u, 0),
+    ("0.1", 0.1, 0)
+]
 population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t)
 
 # Test algorithm

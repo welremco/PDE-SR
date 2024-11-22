@@ -1,15 +1,18 @@
 from Node import Node
 import random
 from copy import deepcopy
+import re
 class Tree:
-    def __init__(self, root=None, parents=None, operators=None, terminals=None, fitness=None, desired_value=None):
+    def __init__(self, root=None, parents=None, operators=None, terminals=None, type=None, desired_value=None):
         self.operators = operators
         self.terminals = terminals
-        self.min_depth = 1 # really annoying when it is 0
-        self.max_depth = 3
+        self.min_depth = 3 # really annoying when it is 0
+        self.max_depth = 4
         self.parents = parents  # list of parents => 0
         self.desired_value = desired_value  # what the output should converge towards
-
+        # if type == "burger":
+        #     self.root = self.string_to_tree()
+        # else:
         self.root = self.random_tree()  # root node of individual tree
         self.root.connect_parent_nodes()  # give every child a parent_node
         # print(self.show_tree())
@@ -55,7 +58,44 @@ class Tree:
             else:
                 return_string = f"{operator[0]}({strings[0]})"
             return Node(operator=operator, children=children, string=return_string, node_type=node_type)
-
+    # def specified_tree(self, type="burger"):
+    #     if type == "burger":
+    #         tree = Node.string_to_tree()
+    #     return tree
+    # def string_to_tree(self, string="((0.1 * second_grad(u)) - (u * first_grad(u)))"):
+    #     # Used for creating tree by hand or from saved strings, brackets denote one depth deeper for operator specified
+    #     # Spaces need to be correctly denoted (for finding roots)
+    #     # Find middle operator (root of tree)
+    #     def split_string(s):
+    #         # This regular expression matches everything between parentheses and treats it as a single entity
+    #         # or matches spaces to split the string
+    #         pattern = r'(\([^)]*\))|\s+'
+    #
+    #         # Split using the regex pattern
+    #         parts = re.split(pattern, s)
+    #         parts = [part for part in parts if part]
+    #         # add remaining back parentheses (should be done easier but idk how)
+    #         new_parts = []
+    #         for part in parts:
+    #             if all(c == ')' for c in part):
+    #                 new_parts[-1] = new_parts[-1] + part
+    #             else:
+    #                 new_parts.append(part)
+    #         # Remove empty strings and return the result
+    #         return new_parts
+    #     def string_to_operator(char=None):
+    #         if char in operators
+    #         return
+    #     splitted_string = split_string(string)
+    #     print(splitted_string)
+    #     children = []
+    #     for part in splitted_string:
+    #         if len(part) == 1:
+    #             # Change string into operator
+    #             operator = string_to_operator(part)
+    #         else:
+    #             node = self.string_to_tree(string=part)
+    #     return Node(operator=operator, children=children, node_type=node_type)
     def calculate_tree(self):
         # calculate tree
         self.value = self.root.calculate()
@@ -70,6 +110,12 @@ class Tree:
         self.root.calculate_string()
     def copy(self):
         return deepcopy(self)
+    # def has_scalars(self):
+    #
+    #     return True
+    # def update_scalars(self):
+    #     if self.has_scalars():
+
     def mutate(self):
         # copy self
         copied_tree = self.copy()
