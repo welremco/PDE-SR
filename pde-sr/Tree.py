@@ -14,6 +14,7 @@ class Tree:
         # if type == "burger":
         #     self.root = self.string_to_tree()
         # else:
+        #     self.root = self.random_tree()
         self.root = self.random_tree()  # root node of individual tree
         self.root.connect_parent_nodes()  # give every child a parent_node
         # print(self.show_tree())
@@ -69,38 +70,96 @@ class Tree:
     #     # Used for creating tree by hand or from saved strings, brackets denote one depth deeper for operator specified
     #     # Spaces need to be correctly denoted (for finding roots)
     #     # Find middle operator (root of tree)
+    #     # list of strings from terminals
+    #     string_terminals = [t[0] for t in self.terminals]
+    #     # strings of operators, used for checking which operator current node is
+    #     string_operators = [op[0] for op in self.operators]
+    #
+    #     # always two or one children per string
     #     def split_string(s):
-    #         # This regular expression matches everything between parentheses and treats it as a single entity
-    #         # or matches spaces to split the string
-    #         pattern = r'(\([^)]*\))|\s+'
     #
-    #         # Split using the regex pattern
-    #         parts = re.split(pattern, s)
-    #         parts = [part for part in parts if part]
-    #         # add remaining back parentheses (should be done easier but idk how)
-    #         new_parts = []
-    #         for part in parts:
-    #             if all(c == ')' for c in part):
-    #                 new_parts[-1] = new_parts[-1] + part
-    #             else:
-    #                 new_parts.append(part)
-    #         # Remove empty strings and return the result
-    #         return new_parts
-    #     def string_to_operator(char=None):
-    #         if char in [o[0] for o in self.operators]:
+    #         # if function has one child
+    #         if any(string.startswith(prefix) for prefix in string_operators) or any(string.startswith(prefix) for prefix in string_terminals):
+    #             return[string]
     #
     #
-    #         return
+    #         new_string = s[1:-1]
+    #         print("NEWSTRING")
+    #         print(new_string)
+    #         # count opening brackets and minus closing brackets
+    #         counter = 0
+    #         last_index = 0
+    #         parts = []
+    #
+    #         for i, char in enumerate(new_string):
+    #             if char == '(':
+    #                 counter += 1
+    #             elif char == ')':
+    #                 counter -= 1
+    #             elif char == ' ':
+    #                 continue
+    #             # if closing and opening brackets are equal, that is first part of string
+    #             print(char)
+    #             if counter == 0 and (char in string_operators):
+    #                 parts.append(new_string[0:i-1])
+    #                 parts.append(new_string[i:i+1])
+    #                 parts.append(new_string[i+2:])
+    #                 last_index = i + 2
+    #             # # parts append if second grad
+    #             # elif new_string[last_index:i]:
+    #             #     last_index = i + 1
+    #         print("parts")
+    #         print(parts)
+    #         return parts
+    #
     #     splitted_string = split_string(string)
     #     print(splitted_string)
-    #     children = []
-    #     for part in splitted_string:
-    #         if len(part) == 1:
-    #             # Change string into operator
-    #             operator = string_to_operator(part)
+    #     if len(splitted_string)==1:
+    #         # check which terminal node should be
+    #         if splitted_string[0] in string_terminals:
+    #             terminal = self.terminals[string_terminals.index(splitted_string[0])]
+    #             leaf_node = Node(value=terminal[1])
+    #             leaf_node.string = terminal[0]
+    #             leaf_node.node_type = terminal[2]
+    #             # Dirty solution, should be nice
+    #             leaf_node.operator = ("leaf", 0)
+    #             return leaf_node
     #         else:
-    #             node = self.string_to_tree(string=part)
-    #     return Node(operator=operator, children=children, node_type=node_type)
+    #             Exception("Terminal not found in given terminals")
+    #
+    #     else:
+    #         children = []
+    #
+    #         # Should be not none after loop, every splitted string should have at index 1 an operator, except if its a leaf
+    #         operator = None
+    #         for part in splitted_string:
+    #             # single child operators
+    #             if any(part.startswith(prefix) for prefix in string_operators):
+    #                 index = None
+    #                 for i, operator_string in enumerate(string_operators):
+    #                     # Check if the part starts with any of the prefixes in string_operators
+    #                     if part.startswith(operator_string):
+    #                         index = i
+    #                 operator = self.operators[index]
+    #             elif part in string_operators:
+    #                 operator = self.operators[string_operators.index(part)]
+    #             else:
+    #                 # Change string into operator
+    #                 node = self.string_to_tree(string=part)
+    #                 children.append(node)
+    #                 if node == None:
+    #                     print("NOO")
+    #         print(children)
+    #         print(operator)
+    #         print(children[0].string)
+    #
+    #         # print(children[1].string)
+    #
+    #         if len(children) == 2 and children[0].node_type == children[1].node_type:
+    #             node_type = children[0].node_type
+    #         else:
+    #             node_type = "matrix"
+    #         return Node(operator=operator, children=children, string=string, node_type=node_type)
     def calculate_tree(self):
         # calculate tree
         self.value = self.root.calculate()

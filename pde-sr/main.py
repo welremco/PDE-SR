@@ -89,6 +89,8 @@ operators = [
 ]
 #string, value, type
 terminals = [("u", u, "matrix"),
+             ("0.1024", 0.1024, "scalar"),
+             ("-1.0011", -1.0011, "scalar"),
              ("0.1", 0.1, "scalar")]
 # string, function, children
 # operators_and_terminals = [
@@ -100,7 +102,7 @@ terminals = [("u", u, "matrix"),
 #     ("u", u, 2),
 #     ("0.1", 0.1, 2)
 # ]
-population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t_solved_functions)
+population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t)
 
 # Test algorithm
 for i in range(100):
