@@ -3,6 +3,9 @@ import random
 from copy import deepcopy
 import numpy as np
 import re
+from sklearn.linear_model import SGDRegressor
+from sklearn.pipeline import make_pipeline
+from scipy.optimize import minimize
 class Tree:
     def __init__(self, root=None, parents=None, operators=None, terminals=None, type=None, desired_value=None):
         self.operators = operators
@@ -54,8 +57,14 @@ class Tree:
 
             if len(children) == 2 and children[0].node_type == children[1].node_type:
                 node_type = children[0].node_type
-            else:
+            # handle case if one type is a constant and other is matrix -> type is matrix
+            elif any(child.node_type == "matrix" for child in children):
                 node_type = "matrix"
+            # handle case if one type is constant and other is scalar -> type is scalar
+            elif any(child.node_type == "scalar" for child in children) and any(child.node_type == "constant" for child in children):
+                node_type = "scalar"
+            else:
+                Exception("Case found outside specified node types")
 
             if operator[2] == 2:
                 return_string = f"({strings[0]} {operator[0]} {strings[1]})"
@@ -165,8 +174,17 @@ class Tree:
         self.value = self.root.calculate()
 
     def evaluate_tree(self):
+        # calculate value of tree
+        self.calculate_tree()
         # evaluate fitness for now
         self.metrics = [np.sqrt(np.absolute(((self.desired_value - self.value) ** 2).mean(axis=-1).mean()))]
+
+    def evaluate_tree_scalars(self, scalars):
+        for i, scalar_node in enumerate(self.scalar_list):
+            scalar_node.value = scalars[i]
+            scalar_node.string = f"{scalars[i]}"
+        self.evaluate_tree()
+        return self.metrics[0]
 
     def show_tree(self):
         return self.root.string
@@ -174,11 +192,29 @@ class Tree:
         self.root.calculate_string()
     def copy(self):
         return deepcopy(self)
-    # def has_scalars(self):
-    #
-    #     return True
-    # def update_scalars(self):
-    #     if self.has_scalars():
+
+    def return_scalars(self):
+        return self.root.return_scalars()
+
+
+    def update_scalars(self):
+        # find list of nodes which are scalars
+        # scalar_list = self.return_scalars()
+        self.scalar_list = self.return_scalars()
+        # check if list has node in it
+        if len(self.scalar_list) > 0:
+            # Initial guess: use the current values of all objects
+            initial_values = np.array([node.value for node in self.scalar_list])
+
+            # Minimize the objective function using scipy's 'L-BFGS-B' method
+            result = minimize(self.evaluate_tree_scalars, initial_values, method='Nelder-Mead')
+
+            # # Update the objects with the optimized values
+            for node, value in zip(self.scalar_list, result.x):
+                node.value = value
+                node.string = f"{value}"
+
+
 
     def mutate(self):
         # copy self
@@ -199,7 +235,7 @@ class Tree:
         new_node.connect_parent_nodes(parent=node.parent)
 
         # Recalculate full tree
-        copied_tree.calculate_tree()
+        # copied_tree.calculate_tree()
 
         # evaluate full tree
         copied_tree.evaluate_tree()
@@ -210,6 +246,36 @@ class Tree:
         # print(f"Copy:     {copied_tree.root.string}")
         return copied_tree
 
+    def crossover(self, other_tree):
+        # copy self
+        copied_tree = self.copy()
+        copied_other_tree = other_tree.copy()
+
+        # Select node randomly starting from root node
+        node_tree, depth_tree = copied_tree.root.randomly_select_node()
+
+        # select matching node from other tree (same depth and type)
+        node_other_tree = copied_other_tree.root.randomly_select_matching_node(specified_type=node_tree.node_type, specified_depth=depth_tree)
+        # if node is found that matches criteria
+        if node_other_tree is not None:
+            # replace node
+            node_tree.parent.replace(node_tree, node_other_tree)
+
+            # connect new node with parent
+            node_other_tree.connect_parent_nodes(parent=node_tree.parent)
+
+            # Recalculate full tree
+            # copied_tree.calculate_tree()
+
+            # evaluate full tree
+            copied_tree.evaluate_tree()
+
+            # calculate string
+            copied_tree.calculate_string()
+
+        else:
+            Exception("No other node of same type found in other tree")
+        return copied_tree
     # def replace(self, node, new_node)
     # start by searching for old node
 

@@ -46,6 +46,23 @@ class Node:
         # explore this random node
         return random.choice(self.children).randomly_select_node(depth=depth + 1)
 
+    def randomly_select_matching_node(self, depth=0, specified_type=None, specified_depth=0):
+        if depth > specified_depth or self.children == None:
+            return None
+        if depth == specified_depth and self.node_type==specified_type:
+            return self
+        # go through children in random order (no bias towards left part of trees)
+        random.shuffle(self.children)
+        for child in self.children:
+            # randomly find node at specified depth that matches criteria
+            node = child.randomly_select_matching_node(depth=depth + 1, specified_type=specified_type, specified_depth=specified_depth)
+            if node is not None:
+                # return matched node
+                return node
+        # nothing found for this branch
+        return None
+        # explore this random node, should for this case account for if node does not contain specified branch
+        # return random.choice(self.children).randomly_select_node(depth=depth + 1, specified_type=specified_type, specified_depth=specified_depth)
     # def string_to_tree(self, string="((0.1 * second_grad(u)) - (u * first_grad(u)))"):
     #     # Used for creating tree by hand or from saved strings, brackets denote one depth deeper for operator specified
     #     # Spaces need to be correctly denoted (for finding roots)
@@ -93,6 +110,16 @@ class Node:
                 return
         raise Exception("No node to replace found")
 
+    def return_scalars(self):
+        scalar_list = []
+        if self.node_type == "scalar" and self.children is None:
+            scalar_list.append(self)
+            return scalar_list
+        if self.children is None:
+            return scalar_list
+        for child in self.children:
+            scalar_list.extend(child.return_scalars())
+        return scalar_list
 data = scio.loadmat('./data/burgers.mat')
 
 x=np.squeeze(data.get("x"))

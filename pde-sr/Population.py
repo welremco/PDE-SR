@@ -1,3 +1,5 @@
+import random
+
 from Tree import Tree
 
 
@@ -14,18 +16,38 @@ class Population:
         # mutate all trees and save if metrics improve
 
         new_trees = []
-        for tree in self.trees:
-            new_tree = tree.mutate()
-            # new_tree.update_scalars()
-            # TODO update for multi objective
-            if new_tree.metrics[0] < tree.metrics[0]:
-                new_trees.append(new_tree)
-            else:
-                new_trees.append(tree)
+
+        # add best n individuals to population #TODO update for generic multiobjective
+        n = 3
+        self.trees.extend(sorted(self.trees, key=lambda tree: tree.metrics[0])[:n])
+
+        while len(new_trees) < len(self.trees):
+            new_tree, tree2 = self.tournament_selection(k=10)
+            # crossover chance
+            if random.random() < 0.5:
+                new_tree = new_tree.crossover(tree2)
+            # mutation chance
+            if random.random() < 0.5:
+                new_tree = new_tree.mutate()
+
+            # optimize scalars
+            new_tree.update_scalars()
+
+            # add tree to new population
+            new_trees.append(new_tree)
 
         self.trees = new_trees
         return
+    # perform tournament selection, return 2 individuals, with tournament size k, and select n individuals to give back
+    def tournament_selection(self, k=10, n=2):
+        # randomly select k trees from population
+        k_trees = random.sample(self.trees, k=k)
 
+        # order from best to worst metrics #TODO currently only one metric, should be generalized
+        k_trees_ordered = sorted(k_trees, key=lambda tree: tree.metrics[0])
+
+        # return n objects
+        return k_trees_ordered[:n]
     def calculate_population(self):
         # calculates values of trees in population
         return

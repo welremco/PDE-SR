@@ -2,6 +2,8 @@ from Population import Population
 # %pip install pysr
 import numpy as np
 import scipy.io as scio
+import matplotlib.pyplot as plt
+
 from scipy.special import lambertw
 # map u(x,t), given field (burgers eq), Where the function will be x,t,u
 data = scio.loadmat('./data/burgers.mat')
@@ -34,6 +36,28 @@ def FiniteDiff(u, dx):
     ux[0] = (-3.0 / 2 * u[0] + 2 * u[1] - u[2] / 2) / dx
     ux[n - 1] = (3.0 / 2 * u[n - 1] - 2 * u[n - 2] + u[n - 3] / 2) / dx
     return ux
+
+
+# Visualize PDE
+def visualize_pde(x, t, u, cmap='plasma', offset_contour=-2, z_label="u(x,t)"):
+
+    X, T = np.meshgrid(x, t)
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    im = ax.plot_surface(X, T, u, cmap=cmap)
+    ax.contourf(X, T, u, zdir='z', offset=offset_contour, cmap=cmap)
+    fig.colorbar(im, shrink=0.5, aspect=5, pad=0.07)
+    # ax.grid(False)
+    ax.set_xlabel('x')
+    ax.set_ylabel('t')
+    ax.set_zlabel(z_label)
+
+    ax.set_zlim([offset_contour, 1])
+
+    plt.gca().azim = -62
+    plt.gca().elve = 16
+    plt.show()
+
+    # %matplotlib inline
 # print(x.shape)
 # print(u_x.shape)
 # print(u_x[0].shape)
@@ -89,9 +113,11 @@ operators = [
 ]
 #string, value, type
 terminals = [("u", u, "matrix"),
-             ("0.1024", 0.1024, "scalar"),
-             ("-1.0011", -1.0011, "scalar"),
-             ("0.1", 0.1, "scalar")]
+             ("a_1", 0.5, "scalar"),
+             # ("a_2", 1, "scalar"),
+             ("-1.0", -1.0, "constant")]
+# scalars can be changed constants cannot
+
 # string, function, children
 # operators_and_terminals = [
 #     ("+", np.add, 2),
@@ -103,7 +129,7 @@ terminals = [("u", u, "matrix"),
 #     ("0.1", 0.1, 2)
 # ]
 population = Population(n_trees=50, operators=operators, terminals=terminals, desired_value=u_t)
-
+# visualize_pde(x,t,u)
 # Test algorithm
 for i in range(100):
     population.update_population()
@@ -116,5 +142,5 @@ for i in range(100):
             best_individual = tree
     # print best tree every iteration
     print(f"Best individual: {best_individual.root.string}")
-    print(f"Best MSE: {best_score}")
-
+    print(f"Best RMSE: {best_score}")
+    # print(f"Best MSE with Regularization: {best_score}")
