@@ -6,12 +6,14 @@ import re
 from sklearn.linear_model import SGDRegressor
 from sklearn.pipeline import make_pipeline
 from scipy.optimize import minimize
+import torch
+
 class Tree:
     def __init__(self, root=None, parents=None, operators=None, terminals=None, type=None, desired_value=None):
         self.operators = operators
         self.terminals = terminals
-        self.min_depth = 2 # really annoying when it is 0
-        self.max_depth = 3
+        self.min_depth = 1 # really annoying when it is 0
+        self.max_depth = 4
         self.parents = parents  # list of parents => 0
         self.desired_value = desired_value  # what the output should converge towards
         # if type == "burger":
@@ -26,7 +28,7 @@ class Tree:
         # print(self.metrics)
 
     def random_tree(self, depth=0, node_type=None, child_type=None):
-        if depth > self.min_depth and (depth == self.max_depth or random.random() < 0.1):
+        if depth > self.min_depth and (depth == self.max_depth or random.random() < 0.5):
             # if node type given a matrix, it means that the parent expects a matrix
             if node_type == "matrix":
                 choice = self.terminals[0]
@@ -177,7 +179,7 @@ class Tree:
         # calculate value of tree
         self.calculate_tree()
         # evaluate fitness for now
-        self.metrics = [np.sqrt(np.absolute(((self.desired_value - self.value) ** 2).mean(axis=-1).mean()))]
+        self.metrics = [np.sqrt(np.absolute(((self.desired_value - self.value) ** 2).mean(axis=None).mean()))]
 
     def evaluate_tree_scalars(self, scalars):
         for i, scalar_node in enumerate(self.scalar_list):
@@ -196,7 +198,6 @@ class Tree:
     def return_scalars(self):
         return self.root.return_scalars()
 
-
     def update_scalars(self):
         # find list of nodes which are scalars
         # scalar_list = self.return_scalars()
@@ -207,14 +208,43 @@ class Tree:
             initial_values = np.array([node.value for node in self.scalar_list])
 
             # Minimize the objective function using scipy's 'L-BFGS-B' method
-            result = minimize(self.evaluate_tree_scalars, initial_values, method='Nelder-Mead')
+            result = minimize(self.evaluate_tree_scalars, initial_values, method='Powell')
 
             # # Update the objects with the optimized values
             for node, value in zip(self.scalar_list, result.x):
                 node.value = value
                 node.string = f"{value}"
 
+    def update_scalars_torch(self):
+        # find list of nodes which are scalars
+        # scalar_list = self.return_scalars()
+        self.scalar_list = self.return_scalars()
+        # check if list has node in it
+        if len(self.scalar_list) > 0:
+            # Initial guess: use the current values of all objects
+            values = np.array([node.value for node in self.scalar_list])
+            values_tensor = torch.tensor(values, requires_grad=True)
+            optimizer = torch.optim.Adam([values_tensor], lr=0.01)
+            # Minimize the objective function using scipy's 'L-BFGS-B' method
+            for step in range(1000):
+                optimizer.zero_grad()  # Clear previous gradients
 
+                # Compute the loss value (objective function)
+                loss = self.evaluate_tree_scalars(values_tensor)
+
+                # Backpropagate to compute gradients
+                loss.backward()
+
+                # Apply the gradients to update the values of the objects
+                optimizer.step()
+
+                # Print the progress every 100 steps
+                if step % 100 == 0:
+                    print(f"Step {step}, Loss: {loss.item()}")
+            # # Update the objects with the optimized values
+            # for node, value in zip(self.scalar_list, result.x):
+            #     node.value = value
+            #     node.string = f"{value}"
 
     def mutate(self):
         # copy self

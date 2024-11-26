@@ -7,9 +7,10 @@ class Population:
     def __init__(self, n_trees, operators, terminals, desired_value):
         self.trees = [Tree(operators=operators, terminals=terminals, desired_value=desired_value) for i in
                       range(n_trees)]  # generate random trees according to specified number
-        self.trees.append(Tree(operators=operators, terminals=terminals, desired_value=desired_value, type='burger'))
+        # self.trees.append(Tree(operators=operators, terminals=terminals, desired_value=desired_value, type='burger'))
         self.operators = operators  # list of types
         self.terminals = terminals  # list of possible leaf nodes
+        self.desired_value = desired_value
 
     def update_population(self):
         # updates population
@@ -18,8 +19,10 @@ class Population:
         new_trees = []
 
         # add best n individuals to population #TODO update for generic multiobjective
-        n = 3
-        self.trees.extend(sorted(self.trees, key=lambda tree: tree.metrics[0])[:n])
+        n = 1
+        new_trees.extend(sorted(self.trees, key=lambda tree: tree.metrics[0])[:n])
+        # add 10% new trees every population
+        new_trees.extend([Tree(operators=self.operators, terminals=self.terminals, desired_value=self.desired_value) for i in range(round(0.1*len(self.trees)))])
 
         while len(new_trees) < len(self.trees):
             new_tree, tree2 = self.tournament_selection(k=10)
@@ -32,6 +35,9 @@ class Population:
 
             # optimize scalars
             new_tree.update_scalars()
+
+            # new_tree.update_scalars_torch()
+
 
             # add tree to new population
             new_trees.append(new_tree)
